@@ -54,11 +54,6 @@ def endpoint():
         #   delete the row with an index of 0
         Alarm.query.delete()
 
-    # select all rows in the database and table Alarm
-    alarms = Alarm.query.all()
-    for alarm in alarms:
-        print(alarm.index, alarm.time, alarm.state)
-
     response = {
         'status': 'success',
         'message': 'JSON data received'
@@ -77,4 +72,4 @@ def get_alarm():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=False, host='0.0.0.0', port=5000)
