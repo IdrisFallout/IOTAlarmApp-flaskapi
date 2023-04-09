@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
+import paho.mqtt.client as mqtt
 
 app = Flask(__name__)
 api = Api(app, prefix="/api/v1")
@@ -10,6 +11,14 @@ auth = HTTPBasicAuth()
 USER_DATA = {
     "admin": "admin"
 }
+
+broker_address = "test.mosquitto.org"
+port = 1883
+
+client = mqtt.Client()
+
+# Connect to MQTT broker
+client.connect(broker_address, port)
 
 
 @auth.verify_password
@@ -58,6 +67,7 @@ def endpoint():
         'status': 'success',
         'message': 'JSON data received'
     }
+    publish_data()
     return jsonify(response)
 
 
@@ -70,6 +80,18 @@ def get_alarm():
         alarm_list.append({'index': alarm.index, 'time': alarm.time, 'state': alarm.state})
     return jsonify(alarm_list)
 
+
+def publish_data():
+    topic = f"/esp/led"
+    message = f"{publish_data.STATE}"  # Replace with the message you want to publish
+    client.publish(topic, message)
+    if publish_data.STATE == 0:
+        STATE = 1
+    elif publish_data.STATE == 1:
+        STATE = 0
+
+
+publish_data.STATE = 0
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
