@@ -40,7 +40,7 @@ class Alarm(db.Model):
         return '<Alarm %r>' % self.index
 
 
-@app.route('/endpoint', methods=['POST'])
+@app.route('/set_alarm', methods=['POST'])
 @auth.login_required
 def endpoint():
     json_data = request.get_json()
