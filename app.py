@@ -1,4 +1,5 @@
 import json
+import time
 from threading import Thread
 
 import paho.mqtt.client as mqtt
@@ -17,6 +18,10 @@ USER_DATA = {
 
 broker_address = "test.mosquitto.org"
 port = 1883
+
+ALARM_JSON = [[], []]
+counter = 0
+json_data = []
 
 
 def on_disconnect(client, userdata, rc):
@@ -64,6 +69,7 @@ class Alarm(db.Model):
 @app.route('/set_alarm', methods=['POST'])
 @auth.login_required
 def set_alarm():
+    global json_data
     json_data = request.get_json()
     # delete all rows in the database and add json_data to the database
     Alarm.query.delete()
@@ -79,9 +85,13 @@ def set_alarm():
         'status': 'success',
         'message': 'JSON data received'
     }
-    thread = Thread(target=publish_data, args=(json_data,))
-    thread.start()
     return jsonify(response)
+
+
+def initialize_alarm(alarm_list):
+    global json_data
+    if alarm_list is not None:
+        json_data = alarm_list
 
 
 @app.route('/get_alarm', methods=['GET'])
@@ -91,6 +101,7 @@ def get_alarm():
     alarm_list = []
     for alarm in alarms:
         alarm_list.append({'index': alarm.index, 'time': alarm.time, 'state': alarm.state})
+    initialize_alarm(alarm_list)
     return jsonify(alarm_list)
 
 
@@ -104,6 +115,25 @@ def publish_data(data):
     client.loop_stop()
 
 
+def detect_change():
+    global counter
+    while True:
+        if counter == 0:
+            ALARM_JSON[0] = json_data
+            counter = 1
+            most_current = 0
+        else:
+            ALARM_JSON[1] = json_data
+            counter = 0
+            most_current = 1
+
+        if ALARM_JSON[0] != ALARM_JSON[1]:
+            publish_data(ALARM_JSON[most_current])
+        time.sleep(0.5)
+
+
+thread = Thread(target=detect_change)
+thread.start()
+
 if __name__ == '__main__':
-    # Start Flask application
     app.run(debug=False, host='0.0.0.0', port=5000)
