@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
 import paho.mqtt.client as mqtt
+import json
+import threading
 
 app = Flask(__name__)
 api = Api(app, prefix="/api/v1")
@@ -67,7 +69,7 @@ def endpoint():
         'status': 'success',
         'message': 'JSON data received'
     }
-    publish_data()
+    publish_data(json_data)
     return jsonify(response)
 
 
@@ -81,17 +83,22 @@ def get_alarm():
     return jsonify(alarm_list)
 
 
-def publish_data():
-    topic = f"/esp/led"
-    message = f"{publish_data.STATE}"  # Replace with the message you want to publish
-    client.publish(topic, message)
+def publish_data(data):
+    payload = json.dumps(data)
+    topic = "esp/alarm"
+    client.publish(topic, payload)
     if publish_data.STATE == 0:
-        STATE = 1
+        publish_data.STATE = 1
     elif publish_data.STATE == 1:
-        STATE = 0
+        publish_data.STATE = 0
 
 
 publish_data.STATE = 0
 
 if __name__ == '__main__':
+    # Start MQTT client in a separate thread
+    client_thread = threading.Thread(target=client.loop_forever)
+    client_thread.start()
+
+    # Start Flask application
     app.run(debug=False, host='0.0.0.0', port=5000)
