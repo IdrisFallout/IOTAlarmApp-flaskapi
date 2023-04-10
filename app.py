@@ -1,5 +1,4 @@
 import json
-import time
 from threading import Thread
 
 import paho.mqtt.client as mqtt
@@ -22,6 +21,7 @@ port = 1883
 ALARM_JSON = [[], []]
 counter = 0
 json_data = []
+most_current = 0
 
 
 def on_disconnect(client, userdata, rc):
@@ -107,6 +107,12 @@ def get_alarm():
     return jsonify(alarm_list)
 
 
+@app.route('/get_enabled_alarms', methods=['GET'])
+@auth.login_required
+def get_enabled_alarms():
+    return filter_enabled_alarms(ALARM_JSON[most_current])
+
+
 def publish_data(data):
     payload = str(json.dumps(data)).encode() + b'\n'
     # send the payload in chunks of 200 bytes
@@ -118,7 +124,7 @@ def publish_data(data):
 
 
 def detect_change():
-    global counter
+    global counter, most_current
     if counter == 0:
         ALARM_JSON[0] = json_data
         counter = 1
