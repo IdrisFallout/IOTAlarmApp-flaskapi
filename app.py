@@ -85,6 +85,8 @@ def set_alarm():
         'status': 'success',
         'message': 'JSON data received'
     }
+    # publish the data to the MQTT broker
+    Thread(target=detect_change).start()
     return jsonify(response)
 
 
@@ -117,23 +119,18 @@ def publish_data(data):
 
 def detect_change():
     global counter
-    while True:
-        if counter == 0:
-            ALARM_JSON[0] = json_data
-            counter = 1
-            most_current = 0
-        else:
-            ALARM_JSON[1] = json_data
-            counter = 0
-            most_current = 1
+    if counter == 0:
+        ALARM_JSON[0] = json_data
+        counter = 1
+        most_current = 0
+    else:
+        ALARM_JSON[1] = json_data
+        counter = 0
+        most_current = 1
 
-        if ALARM_JSON[0] != ALARM_JSON[1]:
-            publish_data(ALARM_JSON[most_current])
-        time.sleep(0.5)
+    if ALARM_JSON[0] != ALARM_JSON[1]:
+        publish_data(ALARM_JSON[most_current])
 
-
-thread = Thread(target=detect_change)
-thread.start()
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
