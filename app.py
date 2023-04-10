@@ -1,4 +1,5 @@
 import json
+from threading import Thread
 
 import paho.mqtt.client as mqtt
 from flask import Flask, request, jsonify
@@ -78,7 +79,8 @@ def set_alarm():
         'status': 'success',
         'message': 'JSON data received'
     }
-    publish_data(json_data)
+    thread = Thread(target=publish_data, args=(json_data,))
+    thread.start()
     return jsonify(response)
 
 
