@@ -86,7 +86,7 @@ def get_alarm():
 def publish_data(data):
     payload = json.dumps(data)
     topic = "esp/alarm"
-    client.publish(topic, payload)
+    client.publish(topic, f"{payload}")
     if publish_data.STATE == 0:
         publish_data.STATE = 1
     elif publish_data.STATE == 1:
