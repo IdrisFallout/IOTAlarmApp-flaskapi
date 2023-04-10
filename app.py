@@ -27,7 +27,6 @@ client = mqtt.Client()
 client.on_disconnect = on_disconnect
 client._reconnect_on_failure = True
 
-
 # Connect to MQTT broker
 # client.connect(broker_address, port, 60)
 client.connect_async(broker_address, port, 60)
@@ -99,10 +98,8 @@ def publish_data(data):
     topic = "esp/alarm"
     client.loop_start()
     for i in range(0, len(payload), 200):
-        print(payload[i:i + 200])
         client.publish(topic, payload[i:i + 200])
     client.loop_stop()
-
 
 
 if __name__ == '__main__':
