@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Resource, Api
-from flask_httpauth import HTTPBasicAuth
-import paho.mqtt.client as mqtt
 import json
-import threading
+
+import paho.mqtt.client as mqtt
+from flask import Flask, request, jsonify
+from flask_httpauth import HTTPBasicAuth
+from flask_restful import Api
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 api = Api(app, prefix="/api/v1")
@@ -17,7 +17,14 @@ USER_DATA = {
 broker_address = "test.mosquitto.org"
 port = 1883
 
+
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        client.reconnect()
+
+
 client = mqtt.Client()
+client.on_disconnect = on_disconnect
 
 # Connect to MQTT broker
 client.connect(broker_address, port)
@@ -87,18 +94,10 @@ def publish_data(data):
     payload = json.dumps(data)
     topic = "esp/alarm"
     client.publish(topic, f"{payload}")
-    if publish_data.STATE == 0:
-        publish_data.STATE = 1
-    elif publish_data.STATE == 1:
-        publish_data.STATE = 0
 
-
-publish_data.STATE = 0
 
 if __name__ == '__main__':
-    # Start MQTT client in a separate thread
-    client_thread = threading.Thread(target=client.loop_forever)
-    client_thread.start()
+    client.loop_start()
 
     # Start Flask application
     app.run(debug=False, host='0.0.0.0', port=5000)
