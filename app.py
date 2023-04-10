@@ -95,11 +95,12 @@ def get_alarm():
 
 def publish_data(data):
     payload = str(json.dumps(data)).encode() + b'\n'
-    # send the payload in chunks of 255 bytes
+    # send the payload in chunks of 200 bytes
     topic = "esp/alarm"
     client.loop_start()
-    for i in range(0, len(payload), 255):
-        client.publish(topic, payload[i:i + 255])
+    for i in range(0, len(payload), 200):
+        print(payload[i:i + 200])
+        client.publish(topic, payload[i:i + 200])
     client.loop_stop()
 
 
