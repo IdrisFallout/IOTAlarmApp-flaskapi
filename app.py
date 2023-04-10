@@ -129,7 +129,15 @@ def detect_change():
         most_current = 1
 
     if ALARM_JSON[0] != ALARM_JSON[1]:
-        publish_data(ALARM_JSON[most_current])
+        publish_data(filter_enabled_alarms(ALARM_JSON[most_current]))
+
+
+def filter_enabled_alarms(alarms):
+    enabled_alarms = []
+    for alarm in alarms:
+        if alarm['state'] is True:
+            enabled_alarms.append(alarm['time'])
+    return enabled_alarms
 
 
 if __name__ == '__main__':
