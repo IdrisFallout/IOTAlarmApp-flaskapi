@@ -25,9 +25,12 @@ def on_disconnect(client, userdata, rc):
 
 client = mqtt.Client()
 client.on_disconnect = on_disconnect
+client._reconnect_on_failure = True
+
 
 # Connect to MQTT broker
-client.connect(broker_address, port)
+# client.connect(broker_address, port, 60)
+client.connect_async(broker_address, port, 60)
 
 
 @auth.verify_password
@@ -60,7 +63,7 @@ class Alarm(db.Model):
 
 @app.route('/set_alarm', methods=['POST'])
 @auth.login_required
-def endpoint():
+def set_alarm():
     json_data = request.get_json()
     # delete all rows in the database and add json_data to the database
     Alarm.query.delete()
@@ -93,11 +96,11 @@ def get_alarm():
 def publish_data(data):
     payload = json.dumps(data)
     topic = "esp/alarm"
+    client.loop_start()
     client.publish(topic, f"{payload}")
+    client.loop_stop()
 
 
 if __name__ == '__main__':
-    client.loop_start()
-
     # Start Flask application
     app.run(debug=False, host='0.0.0.0', port=5000)
