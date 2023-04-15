@@ -1,4 +1,5 @@
 import json
+import os
 from threading import Thread
 
 import paho.mqtt.client as mqtt
@@ -45,7 +46,7 @@ def verify(username, password):
     return USER_DATA.get(username) == password
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///iotalarmapp.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
