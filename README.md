@@ -1,2 +1,2 @@
 # IOTAlarmApp-flaskapi
-A flask api for IOTAlarmApp
+This is a webserver to be used with the [IOTAlarmApp](https://github.com/IdrisFallout/IOTAlarmApp). It is a Flask API that is used to send and receive data from the IOTAlarmApp. It is used to send data to the database and to receive data from the database. The server also runs [MQTT](https://github.com/IdrisFallout/MQTTClient) to forward the data it gets from the app to the ESP8266 for processing. In this case it forward all enabled alarms to the microcontroller to set the alarms.
